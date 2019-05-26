@@ -2,26 +2,10 @@ const express = require("express");
 const app = express();
 const logger = require("morgan");
 const bodyParser = require("body-parser");
-const request = require('request');
+const refreshLocalDatabase = require("./api/update-db-function")
 
-const predictionRoute = require("./api/routes/prediction");
-
-
-function refreshLocalDatabase() {
-  request.get(
-    "http://datamall2.mytransport.sg/ltaodataservice/CarParkAvailabilityv2",
-    {
-      headers: {
-        Accept: "application/json",
-        AccountKey: "EPEcmrGzRWeN4824xfuvoQ=="
-      }
-    },
-    (err, res, body) => {
-      const carParks = JSON.parse(body).value;
-      console.log(carParks[0].Development);
-    }
-  );
-}
+const predictionRoute = require("./api/routes/prediction-route");
+const dataRoute = require('./api/routes/data-route');
 
 refreshLocalDatabase()
 setInterval(refreshLocalDatabase, 3000000);
@@ -40,7 +24,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/prediction", predictionRoute);
+app.use("/api", predictionRoute);
+app.use('/api', dataRoute);
 
 app.use((req, res, next) => {
   const error = new Error("Not found");
